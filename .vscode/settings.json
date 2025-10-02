@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["nodenext", "sonarjs"]
+  "cSpell.words": ["nodenext", "sonarjs"],
+  "eslint.useFlatConfig": true,
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }
