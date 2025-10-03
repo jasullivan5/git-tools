@@ -49,10 +49,7 @@ export default defineConfig([
       unicorn.configs.recommended,
       importPlugin.flatConfigs.recommended,
       importPlugin.flatConfigs.typescript,
-      compat.extends(
-        "plugin:security/recommended-legacy",
-        "plugin:promise/recommended",
-      ),
+      compat.extends("plugin:promise/recommended"),
     ],
     rules: {
       "unicorn/no-null": "off",
