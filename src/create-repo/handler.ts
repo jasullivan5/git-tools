@@ -1,14 +1,57 @@
-export async function createRepo() {
-  // Parse & Resolve Path Input
-  // - Take the user-provided path (absolute or relative).
-  // - Resolve to an absolute, normalized path (handle ./.., symlinks, separators).
-  // - Derive the leaf directory name as the intended repo name.
-  // Validate Parent & Leaf Directories
-  // - Verify the parent directory exists; if not, fail with a clear message (do not create parents).
-  // - If the leaf directory doesn’t exist, create only the leaf folder.
-  // - If the leaf exists:
-  //   - If it contains a .git directory → abort with a helpful message.
-  //   - If it’s non-empty → abort (or require an explicit --force in a later iteration).
+import { mkdir, readdir } from "node:fs/promises";
+import path from "node:path";
+
+function hasErrnoCode(error: unknown, ...errnoCodes: string[]) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string" &&
+    errnoCodes.includes(error.code)
+  );
+}
+
+async function findOrCreateNewRepoDirectory(newRepoPath: string) {
+  const newRepoPathResolved = path.resolve(newRepoPath);
+  const parentDirectory = path.dirname(newRepoPathResolved);
+  try {
+    await mkdir(newRepoPathResolved);
+  } catch (error: unknown) {
+    if (hasErrnoCode(error, "ENOENT")) {
+      throw new Error(
+        `Parent directory does not exist: ${parentDirectory}. Create it first or choose an existing parent.`,
+      );
+    } else if (hasErrnoCode(error, "EACCES", "EPERM")) {
+      throw new Error(
+        `Permission denied creating directory: ${newRepoPathResolved}. Check write permissions for ${parentDirectory}.`,
+      );
+    } else if (!hasErrnoCode(error, "EEXIST")) {
+      throw error;
+    }
+  }
+  return newRepoPathResolved;
+}
+
+async function assertDirectoryEmpty(newRepoPathResolved: string) {
+  try {
+    const entries = await readdir(newRepoPathResolved);
+    if (entries.length > 0) {
+      throw new Error(`Target directory is not empty: ${newRepoPathResolved}.`);
+    }
+  } catch (error) {
+    if (hasErrnoCode(error, "ENOTDIR")) {
+      throw new Error(
+        `Target exists but is not a directory: ${newRepoPathResolved}. Choose a different path.`,
+      );
+    }
+    throw error;
+  }
+}
+
+export async function createRepo(newRepoPath: string) {
+  const newRepoPathResolved = await findOrCreateNewRepoDirectory(newRepoPath);
+  await assertDirectoryEmpty(newRepoPathResolved);
+  return newRepoPathResolved;
   // Validate Derived Repo Name (for GitHub)
   // - Ensure the leaf name adheres to GitHub repo naming rules (length, characters).
   // - Normalize obvious issues (trim whitespace); warn about case normalization if applicable.
