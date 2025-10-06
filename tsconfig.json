@@ -1,12 +1,12 @@
 {
+  "include": ["./**/*"],
+  "exclude": ["./node_modules", "./dist"],
   "compilerOptions": {
     "module": "nodenext",
-    "moduleResolution": "nodenext",
     "target": "esnext",
     "lib": ["esnext"],
     "strict": true,
-    "checkJs": true,
-    "allowJs": true,
+    "esModuleInterop": true,
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -20,9 +20,9 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "esModuleInterop": true,
     "skipLibCheck": true,
-    "noEmit": true
-  },
-  "exclude": ["node_modules"]
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true
+  }
 }

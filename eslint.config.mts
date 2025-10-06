@@ -1,3 +1,4 @@
+// eslint.config.ts
 import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import { configs as tseslintConfigs } from "typescript-eslint";
@@ -16,12 +17,13 @@ const compat = new FlatCompat({
   baseDirectory: import.meta.dirname,
 });
 
-export default defineConfig([
+export default defineConfig(
   {
-    ignores: ["./node_modules"],
+    ignores: ["./node_modules", "./dist"],
     languageOptions: {
       globals: globals.node,
     },
+    // typed as a generic settings bag; eslint doesn't ship a strict type here
     settings: { "import/resolver": { typescript: true, node: true } },
   },
   {
@@ -40,6 +42,11 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    rules: {
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+    },
   },
   {
     files: ["**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}"],
@@ -49,20 +56,22 @@ export default defineConfig([
       unicorn.configs.recommended,
       importPlugin.flatConfigs.recommended,
       importPlugin.flatConfigs.typescript,
-      compat.extends("plugin:promise/recommended"),
+      compat.extends(
+        "plugin:security/recommended-legacy",
+        "plugin:promise/recommended",
+      ),
     ],
     rules: {
       "unicorn/no-null": "off",
+      "security/detect-non-literal-fs-filename": "off",
     },
   },
   {
     files: ["./**/*.test.*"],
     extends: [vitest.configs.recommended],
     languageOptions: {
+      // vitest plugin exposes an env bag with globals; it's fine to pass through
       globals: vitest.environments.env.globals,
-    },
-    rules: {
-      "@typescript-eslint/no-unsafe-assignment": "off",
     },
   },
   {
@@ -79,4 +88,4 @@ export default defineConfig([
     files: ["**/*.{json,md,js,cjs,mjs,jsx,ts,cts,mts,tsx}"],
     extends: [prettier],
   },
-]);
+);

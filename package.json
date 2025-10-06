@@ -1,13 +1,13 @@
 {
   "name": "git-tools",
-  "private": "true",
-  "files": [],
+  "version": "1.0.0",
   "type": "module",
+  "license": "ISC",
+  "private": true,
   "engines": {
     "node": ">=22.18.0"
   },
   "scripts": {},
-  "license": "MIT",
   "packageManager": "pnpm@10.17.1",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
@@ -34,11 +34,13 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@types/prompts": "^2.4.9",
     "commander": "^14.0.1",
     "execa": "^9.6.0",
     "fast-glob": "^3.3.3",
     "fs-extra": "^11.3.2",
     "picocolors": "^1.1.1",
+    "prompts": "^2.4.2",
     "zod": "^4.1.11"
   }
 }
