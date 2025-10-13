@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["esbuild", "jasul", "nodenext", "sonarjs", "unrs"],
+  "cSpell.words": [
+    "esbuild",
+    "jasul",
+    "jasullivan",
+    "nodenext",
+    "sonarjs",
+    "unrs"
+  ],
   "eslint.useFlatConfig": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "typescript.enablePromptUseWorkspaceTsdk": true
