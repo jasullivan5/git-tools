@@ -1,5 +1,5 @@
 import { remove } from "fs-extra";
-import { getErrorMessage, type DirectoryStatus } from "./application.js";
+import { getErrorMessage, type DirectoryStatus } from "./utilities.js";
 import type { GitHubRepo } from "./repo.js";
 import { execa } from "execa";
 

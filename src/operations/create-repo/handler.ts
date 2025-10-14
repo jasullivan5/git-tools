@@ -1,6 +1,6 @@
 import { execa } from "execa";
 import { GitHubRepo } from "./repo.js";
-import { ensureDirectory, type DirectoryStatus } from "./application.js";
+import { ensureDirectory, type DirectoryStatus } from "./utilities.js";
 import { cleanup } from "./cleanup.js";
 
 export async function createRepo(owner: string, directory: string) {
