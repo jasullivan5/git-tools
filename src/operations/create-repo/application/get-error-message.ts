@@ -1,5 +1,3 @@
-import { ensureDir, pathExists } from "fs-extra";
-
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
@@ -16,14 +14,4 @@ export function getErrorMessage(error: unknown): string {
   } catch {
     return String(error);
   }
-}
-
-export type DirectoryStatus = "unknown" | "existed" | "created";
-
-export async function ensureDirectory(
-  directory: string,
-): Promise<DirectoryStatus> {
-  const existed = await pathExists(directory);
-  await ensureDir(directory);
-  return existed ? "existed" : "created";
 }

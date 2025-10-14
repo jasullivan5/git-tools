@@ -1,6 +1,7 @@
 import { remove } from "fs-extra";
-import { getErrorMessage, type DirectoryStatus } from "./utilities.js";
-import type { GitHubRepo } from "./repo.js";
+import { type DirectoryStatus } from "./ensure-directory.js";
+import { getErrorMessage } from "./get-error-message.js";
+import type { GitHubRepo } from "../domain/repo.js";
 import { execa } from "execa";
 
 export async function cleanup(
