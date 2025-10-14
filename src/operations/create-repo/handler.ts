@@ -9,71 +9,84 @@ const gitHubBaseUrl = "https://github.com/";
 const gitHubUrlSuffix = ".git";
 const temporaryDirectoryPrefix = "create-repo-";
 
-export async function createRepo(repoName: string): Promise<string> {
-  const fullRepo = `${organizationName}/${repoName}`;
-  const repoUrl = gitHubBaseUrl + fullRepo + gitHubUrlSuffix;
-
-  await execa("gh", ["repo", "create", fullRepo, "--public"]);
-
-  try {
-    return await cloneRepo(repoUrl, path.join(repoDestination, repoName));
-  } catch (error) {
-    try {
-      await execa("gh", ["repo", "delete", fullRepo, "--yes"]);
-    } catch (cleanupError) {
-      // Compose both messages so `err.message` shows everything.
-      throw withCleanupMessage(
-        `Failed to delete remote repo: ${repoUrl}`,
-        error,
-        cleanupError,
-      );
-    }
-    throw error;
-  }
+interface CleanupNeeded {
+  cleanupRepoName: string | undefined;
+  cleanupTemporaryDirectory: string | undefined;
 }
 
-async function cloneRepo(httpsUrl: string, localPath: string) {
+export async function createRepo(repoName: string) {
+  const fullRepoName = `${organizationName}/${repoName}`;
+  const localPath = path.join(repoDestination, repoName);
+  const repoUrl = gitHubBaseUrl + fullRepoName + gitHubUrlSuffix;
   const temporaryPathPrefix = path.join(os.tmpdir(), temporaryDirectoryPrefix);
-  const temporaryDirectory = await mkdtemp(temporaryPathPrefix);
-  try {
-    await execa("git", ["clone", httpsUrl, temporaryDirectory]);
-  }
 
+  await execa("gh", ["repo", "create", fullRepoName, "--public"]);
+  const cleanupNeeded: CleanupNeeded = {
+    cleanupRepoName: fullRepoName,
+    cleanupTemporaryDirectory: undefined,
+  };
   try {
-    await execa("git", ["clone", httpsUrl, temporaryDirectory]);
+    const temporaryDirectory = await mkdtemp(temporaryPathPrefix);
+    cleanupNeeded.cleanupTemporaryDirectory = temporaryDirectory;
+    await execa("git", ["clone", repoUrl, temporaryDirectory]);
     await move(temporaryDirectory, localPath, { overwrite: false });
   } catch (error) {
-    try {
-      await remove(temporaryDirectory);
-    } catch (cleanupError) {
-      throw withCleanupMessage(
-        `Failed to delete temporary directory: ${temporaryDirectory}`,
-        error,
-        cleanupError,
-      );
-    }
-    throw error;
-  }
+    const cleanupErrorMessages = await cleanup(cleanupNeeded);
 
+    if (cleanupErrorMessages.length > 0) {
+      const cleanupMessage =
+        "\n\nCleanup failures:\n" + cleanupErrorMessages.join("\n");
+
+      if (error instanceof Error) {
+        error.message += cleanupMessage;
+        throw error; // preserves stack, name, and any custom props
+      } else {
+        // fallback for non-Error values
+        const message = getErrorMessage(error) + cleanupMessage;
+        throw new Error(message);
+      }
+    }
+
+    throw error; // rethrow original if cleanup succeeded
+  }
   return localPath;
 }
 
-/** Build an AggregateError whose .message already includes both error messages */
-function withCleanupMessage(
-  context: string,
-  original: unknown,
-  cleanup: unknown,
-): AggregateError {
-  const message =
-    `${context}\n` +
-    `Original error: ${toMessage(original)}\n` +
-    `Cleanup error: ${toMessage(cleanup)}`;
-  return new AggregateError([original, cleanup], message);
+async function cleanup(cleanupNeeded: CleanupNeeded) {
+  const errorMessages: string[] = [];
+  if (cleanupNeeded.cleanupTemporaryDirectory) {
+    try {
+      await remove(cleanupNeeded.cleanupTemporaryDirectory);
+    } catch (error) {
+      errorMessages.push(getErrorMessage(error));
+    }
+  }
+  if (cleanupNeeded.cleanupRepoName) {
+    try {
+      await execa("gh", [
+        "repo",
+        "delete",
+        cleanupNeeded.cleanupRepoName,
+        "--yes",
+      ]);
+    } catch (error) {
+      errorMessages.push(getErrorMessage(error));
+    }
+  }
+  return errorMessages;
 }
 
-/** Safely turn unknown into a useful, single-line message */
-function toMessage(error: unknown): string {
-  if (error instanceof Error) return error.message || error.toString();
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  if (
+    typeof error === "object" &&
+    error &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
   try {
     return JSON.stringify(error);
   } catch {
