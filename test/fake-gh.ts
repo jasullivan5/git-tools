@@ -1,5 +1,5 @@
 import path from "node:path";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm } from "fs-extra";
 import { execa } from "execa";
 import type { Repo } from "../src/operations/create-repo/domain/repo.js";
 
