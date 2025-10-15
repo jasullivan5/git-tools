@@ -1,9 +1,9 @@
 import { execa } from "execa";
-import type { GitHubRepo } from "../domain/git-hub-repo.js";
+import type { Repo } from "../domain/repo.js";
 
 const gitHub = "gh";
 
-export async function createRepo(repo: GitHubRepo) {
+export async function createRepo(repo: Repo) {
   await execa(gitHub, [
     "repo",
     "create",
@@ -12,6 +12,6 @@ export async function createRepo(repo: GitHubRepo) {
   ]);
 }
 
-export async function deleteRepo(repo: GitHubRepo) {
+export async function deleteRepo(repo: Repo) {
   await execa(gitHub, ["repo", "delete", repo.fullName, "--yes"]);
 }

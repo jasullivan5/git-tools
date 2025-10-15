@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import type { GitHubRepo } from "../domain/git-hub-repo.js";
+import type { Repo } from "../domain/repo.js";
 import { ensureDir, pathExists, remove } from "fs-extra";
 import { extractErrorMessage } from "../application/extract-error-message.js";
 import { combineErrors } from "../application/combine-errors.js";
@@ -7,7 +7,7 @@ import { combineErrors } from "../application/combine-errors.js";
 const git = "git";
 type DirectoryState = "existed" | "created";
 
-export async function cloneRepo(repo: GitHubRepo) {
+export async function cloneRepo(repo: Repo) {
   const directoryState = await ensureDirectory(repo.directory);
   try {
     await execa(git, ["clone", repo.url, repo.directory]);

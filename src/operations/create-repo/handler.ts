@@ -1,6 +1,6 @@
 import { combineErrors } from "./application/combine-errors.js";
 import { extractErrorMessage } from "./application/extract-error-message.js";
-import { GitHubRepo } from "./domain/git-hub-repo.js";
+import { Repo } from "./domain/repo.js";
 import {
   deleteRepo,
   createRepo as ghCreateRepo,
@@ -8,13 +8,13 @@ import {
 import { cloneRepo as gitCloneRepo } from "./infrastructure/git.js";
 
 export async function createRepo(owner: string, directory: string) {
-  const repo = new GitHubRepo(owner, directory);
+  const repo = new Repo(owner, directory);
   await ghCreateRepo(repo);
   await cloneRepo(repo);
   return repo;
 }
 
-async function cloneRepo(repo: GitHubRepo) {
+async function cloneRepo(repo: Repo) {
   try {
     await gitCloneRepo(repo);
   } catch (error) {
@@ -23,7 +23,7 @@ async function cloneRepo(repo: GitHubRepo) {
   }
 }
 
-async function cleanupRepo(repo: GitHubRepo) {
+async function cleanupRepo(repo: Repo) {
   try {
     await deleteRepo(repo);
   } catch (error) {
