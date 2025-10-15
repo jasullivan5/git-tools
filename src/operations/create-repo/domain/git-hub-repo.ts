@@ -14,7 +14,6 @@ export class GitHubRepo {
     Object.freeze(this);
   }
 
-  // Derived fields
   get name() {
     return path.basename(this.directory);
   }
@@ -26,18 +25,5 @@ export class GitHubRepo {
   }
   get url() {
     return `${baseUrl}${this.fullName}${urlSuffix}`;
-  }
-
-  // Handy args for `gh repo create`
-  ghCreateArgs() {
-    return ["repo", "create", this.fullName, `--${this.visibility as string}`];
-  }
-
-  ghDeleteArgs() {
-    return ["repo", "delete", this.fullName, "--yes"];
-  }
-
-  gitCloneArgs() {
-    return ["clone", this.url, this.directory];
   }
 }

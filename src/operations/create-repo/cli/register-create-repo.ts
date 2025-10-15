@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import pc from "picocolors";
 import path from "node:path";
-import { createRepo } from "../operations/create-repo/handler.js";
+import { createRepo } from "../handler.js";
 
 const owner = "jasullivan5-org";
 const destinationDirectory = "/c/Users/jasul/repos";
