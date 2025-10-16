@@ -26,7 +26,11 @@ export async function createSandbox(prefix = "git-tools-test-sandbox-") {
     try {
       return await function_();
     } finally {
-      process.env["REMOTE_BASE_URL"] = previousGitBase;
+      if (previousGitBase === undefined) {
+        delete process.env["REMOTE_BASE_URL"];
+      } else {
+        process.env["REMOTE_BASE_URL"] = previousGitBase;
+      }
       process.chdir(previousCwd);
     }
   }
