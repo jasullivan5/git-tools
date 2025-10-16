@@ -39,21 +39,26 @@ function read<T>({
 
 // Export your config, evaluated once at startup:
 export const ENV = {
-  REPO_OWNER: read<string>({
-    key: "REPO_OWNER",
-    default_: "jasullivan5-org",
-  }),
-  DESTINATION_DIR: read<string>({
-    key: "DESTINATION_DIR",
-    default_: path.resolve(os.homedir(), "repos"),
-  }),
-  REPO_VISIBILITY: read<RepoVisibility>({
-    key: "REPO_VISIBILITY",
-    parse: parseVisibility,
-    default_: "public",
-  }),
-  REMOTE_BASE_URL: read<string>({
-    key: "REMOTE_BASE_URL",
-    default_: "https://github.com/",
-  }),
+  get REPO_OWNER() {
+    return read<string>({ key: "REPO_OWNER", default_: "jasullivan5-org" });
+  },
+  get DESTINATION_DIR() {
+    return read<string>({
+      key: "DESTINATION_DIR",
+      default_: path.resolve(os.homedir(), "repos"),
+    });
+  },
+  get REPO_VISIBILITY() {
+    return read<RepoVisibility>({
+      key: "REPO_VISIBILITY",
+      parse: parseVisibility,
+      default_: "public",
+    });
+  },
+  get REMOTE_BASE_URL() {
+    return read<string>({
+      key: "REMOTE_BASE_URL",
+      default_: "https://github.com/",
+    });
+  },
 } as const;

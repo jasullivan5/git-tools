@@ -44,4 +44,4 @@ export async function createSandbox(prefix = "git-tools-test-sandbox-") {
   });
 }
 
-export type Sandbox = ReturnType<typeof createSandbox>;
+export type Sandbox = Awaited<ReturnType<typeof createSandbox>>;
