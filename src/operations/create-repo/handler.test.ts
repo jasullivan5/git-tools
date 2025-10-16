@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createRepo } from "./handler.js";
+import { handleCreateRepo } from "./handler.js";
 import { createSandbox, type Sandbox } from "../../../test/sandbox.js";
 import path from "node:path";
 import { existsSync } from "node:fs";
@@ -10,7 +10,7 @@ describe("Given a directory path, when a request is made to create a new repo", 
   beforeAll(async () => {
     sandbox = await createSandbox("temp-root-");
     await sandbox.within(async () => {
-      await createRepo(newRepoPath);
+      await handleCreateRepo(newRepoPath);
     });
   });
 

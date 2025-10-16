@@ -1,38 +1,40 @@
 import path from "node:path";
+import { ENV } from "../../../environment.js";
+import type { RepoVisibility } from "./repo-visibility.js";
 
-const baseUrl = process.env["GIT_BASE_URL"] ?? "https://github.com/";
-const defaultVisibility = getVisibilityOrDefault(
-  process.env["GIT_DEFAULT_VISIBILITY"],
-);
+export function createRepo(
+  owner: string,
+  directory: string,
+  visibility?: RepoVisibility,
+) {
+  const _owner = owner;
+  const _directory = directory;
+  const _visibility = visibility ?? ENV.REPO_VISIBILITY;
+  const _baseUrl = ENV.REMOTE_BASE_URL;
 
-export class Repo {
-  constructor(
-    readonly owner: string,
-    readonly directory: string,
-    readonly visibility: Visibility = defaultVisibility,
-  ) {
-    Object.freeze(this);
-  }
-
-  get name() {
-    return path.basename(this.directory);
-  }
-  get parentDirectory() {
-    return path.dirname(this.directory);
-  }
-  get fullName() {
-    return `${this.owner}/${this.name}`;
-  }
-  get url() {
-    return new URL(`${this.fullName}.git`, baseUrl).href;
-  }
+  return Object.freeze({
+    get name() {
+      return path.basename(_directory);
+    },
+    get parentDirectory() {
+      return path.dirname(_directory);
+    },
+    get fullName() {
+      return `${_owner}/${this.name}`;
+    },
+    get url() {
+      return new URL(`${this.fullName}.git`, _baseUrl).href;
+    },
+    get visibility() {
+      return _visibility;
+    },
+    get owner() {
+      return _owner;
+    },
+    get directory() {
+      return _directory;
+    },
+  });
 }
 
-export const visibilities = new Set(["public", "private", "internal"] as const);
-export type Visibility = typeof visibilities extends Set<infer T> ? T : never;
-export function isVisibility(value: unknown): value is Visibility {
-  return visibilities.has(value as Visibility);
-}
-function getVisibilityOrDefault(value: unknown) {
-  return isVisibility(value) ? value : "public";
-}
+export type Repo = ReturnType<typeof createRepo>;

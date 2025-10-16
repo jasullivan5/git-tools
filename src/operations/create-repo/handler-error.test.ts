@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createRepo } from "./handler.js";
+import { handleCreateRepo } from "./handler.js";
 import { createSandbox, type Sandbox } from "../../../test/sandbox.js";
 import { ensureDir, ensureFile } from "fs-extra";
 
@@ -20,7 +20,7 @@ describe("Given a directory path, when a request is made to create a new repo", 
 
     await expect(
       sandbox.within(async () => {
-        await createRepo(newRepoPath);
+        await handleCreateRepo(newRepoPath);
       }),
     ).rejects.toThrow();
   });
@@ -32,7 +32,7 @@ describe("Given a directory path, when a request is made to create a new repo", 
     });
     await expect(
       sandbox.within(async () => {
-        await createRepo(newRepoPath);
+        await handleCreateRepo(newRepoPath);
       }),
     ).rejects.toThrow();
   });
