@@ -9,6 +9,7 @@ export function registerCreate(program: Command) {
   const destinationDirectory = ENV.DESTINATION_DIR;
   const baseUrl = ENV.REMOTE_BASE_URL;
   const visibility = ENV.REPO_VISIBILITY;
+
   const create = program
     .command("create")
     .description("Create resources (repos, etc.)");
@@ -21,7 +22,8 @@ export function registerCreate(program: Command) {
       const repo = await handleCreateRepo(
         owner,
         path.resolve(destinationDirectory, name),
-        { baseUrl, visibility },
+        visibility,
+        baseUrl,
       );
       console.log(pc.green(`✓ Repo ready in ${pc.bold(repo.directory)}`));
     });

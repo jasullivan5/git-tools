@@ -19,9 +19,12 @@ describe("Given a directory path, when a request is made to create a new repo", 
   beforeAll(async () => {
     sandbox = await createSandbox();
     await sandbox.within(async () => {
-      await handleCreateRepo(owner, newRepoPath, {
-        baseUrl: pathToFileURL("./.remotes/").href,
-      });
+      await handleCreateRepo(
+        owner,
+        newRepoPath,
+        "public",
+        pathToFileURL("./.remotes/").href,
+      );
     });
   });
 
@@ -31,7 +34,6 @@ describe("Given a directory path, when a request is made to create a new repo", 
 
   it("creates a directory for the new repo if one doesn't exist", () => {
     const absPath = path.resolve(sandbox.root, newRepoPath);
-    console.log(absPath);
     const exists = existsSync(absPath);
     expect(exists).toBe(true);
   });

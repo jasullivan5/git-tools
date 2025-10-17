@@ -4,12 +4,13 @@ import { createSetParser } from "../application/create-set-parser.js";
 export function createRepo(
   owner: string,
   directory: string,
-  options?: CreateRepoOptions,
+  visibility: RepoVisibility,
+  baseUrl: string,
 ) {
   const _owner = owner;
   const _directory = directory;
-  const _visibility = options?.visibility ?? "public";
-  const _baseUrl = options?.baseUrl ?? "https://github.com/";
+  const _visibility = visibility;
+  const _baseUrl = baseUrl;
 
   return Object.freeze({
     get name() {
@@ -37,11 +38,6 @@ export function createRepo(
 }
 
 export type Repo = ReturnType<typeof createRepo>;
-
-export interface CreateRepoOptions {
-  visibility?: RepoVisibility;
-  baseUrl?: string;
-}
 
 export const repoVisibilities = new Set([
   "public",

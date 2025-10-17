@@ -1,10 +1,6 @@
 import { combineErrors } from "./application/combine-errors.js";
 import { extractErrorMessage } from "./application/extract-error-message.js";
-import {
-  type CreateRepoOptions,
-  type Repo,
-  createRepo,
-} from "./domain/repo.js";
+import { type Repo, type RepoVisibility, createRepo } from "./domain/repo.js";
 import {
   deleteRepo,
   createRepo as ghCreateRepo,
@@ -14,9 +10,10 @@ import { cloneRepo as gitCloneRepo } from "./infrastructure/git.js";
 export async function handleCreateRepo(
   owner: string,
   directory: string,
-  options?: CreateRepoOptions,
+  visibility: RepoVisibility,
+  baseUrl: string,
 ) {
-  const repo = createRepo(owner, directory, options);
+  const repo = createRepo(owner, directory, visibility, baseUrl);
   await ghCreateRepo(repo);
   await cloneRepo(repo);
   return repo;
