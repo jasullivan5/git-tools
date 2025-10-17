@@ -1,6 +1,6 @@
 import { emptyDir, remove } from "fs-extra";
 import { execa } from "execa";
-import type { Repo } from "../src/operations/create-repo/domain/repo.js";
+import type { Repo } from "../src/domain/repo.js";
 import { fileURLToPath } from "node:url";
 
 export async function createRepo(repo: Repo) {
