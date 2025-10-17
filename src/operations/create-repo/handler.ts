@@ -5,38 +5,44 @@ import {
   type RepoVisibility,
   createRepo,
 } from "../../domain/repo.js";
-import {
-  deleteRepo,
-  createRepo as ghCreateRepo,
-} from "../../infrastructure/git-hub.js";
-import { cloneRepo as gitCloneRepo } from "../../infrastructure/git.js";
 
-export async function handleCreateRepo(
-  owner: string,
-  directory: string,
-  visibility: RepoVisibility,
-  baseUrl: string,
-) {
-  const repo = createRepo(owner, directory, visibility, baseUrl);
-  await ghCreateRepo(repo);
-  await cloneRepo(repo);
-  return repo;
+export interface GitHost {
+  createRepo(repo: Repo): Promise<void>;
+  deleteRepo(repo: Repo): Promise<void>;
 }
 
-async function cloneRepo(repo: Repo) {
-  try {
-    await gitCloneRepo(repo);
-  } catch (error) {
-    const cleanupError = await cleanupRepo(repo);
-    throw cleanupError ? combineErrors(error, cleanupError) : error;
-  }
+export interface Git {
+  cloneRepo(repo: Repo): Promise<void>;
 }
 
-async function cleanupRepo(repo: Repo) {
-  try {
-    await deleteRepo(repo);
-  } catch (error) {
-    return `Cleanup Error: ${extractErrorMessage(error)}`;
+export function makeCreateRepoHandler(git: Git, gitHost: GitHost) {
+  return async function handleCreateRepo(
+    owner: string,
+    directory: string,
+    visibility: RepoVisibility,
+    baseUrl: string,
+  ) {
+    const repo = createRepo(owner, directory, visibility, baseUrl);
+    await gitHost.createRepo(repo);
+    await cloneRepo(repo);
+    return repo;
+  };
+
+  async function cloneRepo(repo: Repo) {
+    try {
+      await git.cloneRepo(repo);
+    } catch (error) {
+      const cleanupError = await cleanupRepo(repo);
+      throw cleanupError ? combineErrors(error, cleanupError) : error;
+    }
   }
-  return "";
+
+  async function cleanupRepo(repo: Repo) {
+    try {
+      await gitHost.deleteRepo(repo);
+    } catch (error) {
+      return `Cleanup Error: ${extractErrorMessage(error)}`;
+    }
+    return "";
+  }
 }

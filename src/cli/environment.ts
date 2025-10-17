@@ -3,7 +3,7 @@ import os from "node:os";
 import { type RepoVisibility, parseVisibility } from "../domain/repo.js";
 import { read } from "../application/environment-utilities.js";
 
-export const ENV = {
+export const ENV = Object.freeze({
   get REPO_OWNER() {
     return read<string>({ key: "REPO_OWNER", default_: "jasullivan5-org" });
   },
@@ -26,4 +26,4 @@ export const ENV = {
       default_: "https://github.com/",
     });
   },
-} as const;
+} as const);

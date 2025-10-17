@@ -1,25 +1,23 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-vi.mock("./infrastructure/git-hub.js", async () => {
-  const fake = await import("../../../test/fake-git-hub.js");
-  return {
-    createRepo: fake.createRepo,
-    deleteRepo: fake.deleteRepo,
-  };
-});
-import { handleCreateRepo } from "./handler.js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { makeCreateRepoHandler } from "./handler.js";
 import { createSandbox, type Sandbox } from "../../../test/sandbox.js";
 import path from "node:path";
 import { existsSync } from "fs-extra";
 import { pathToFileURL } from "node:url";
+import { createFakeGitHub } from "../../../test/fake-git-hub.js";
+import { createGit } from "../../infrastructure/git.js";
 
-describe("Given a directory path, when a request is made to create a new repo", () => {
+describe("Given an owner, directory path, visibility, and remote url, when a request is made to create a new repo", () => {
   let sandbox: Sandbox;
   const newRepoPath = "./new-repo";
   const owner = "jasullivan5-org";
   beforeAll(async () => {
     sandbox = await createSandbox();
     await sandbox.within(async () => {
-      await handleCreateRepo(
+      const fakeGitHub = createFakeGitHub();
+      const git = createGit();
+      const createRepo = makeCreateRepoHandler(git, fakeGitHub);
+      await createRepo(
         owner,
         newRepoPath,
         "public",
@@ -32,7 +30,7 @@ describe("Given a directory path, when a request is made to create a new repo", 
     await sandbox.cleanup();
   });
 
-  it("creates a directory for the new repo if one doesn't exist", () => {
+  it("clones the repo to the given directory", () => {
     const absPath = path.resolve(sandbox.root, newRepoPath);
     const exists = existsSync(absPath);
     expect(exists).toBe(true);

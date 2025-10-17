@@ -4,18 +4,26 @@ import { ensureDir, pathExists, remove } from "fs-extra";
 import { extractErrorMessage } from "../application/extract-error-message.js";
 import { combineErrors } from "../application/combine-errors.js";
 
-const git = "git";
-type DirectoryState = "existed" | "created";
+export function createGit() {
+  const git = "git";
 
-export async function cloneRepo(repo: Repo) {
-  const directoryState = await ensureDirectory(repo.directory);
-  try {
-    await execa(git, ["clone", repo.url, repo.directory]);
-  } catch (error) {
-    const cleanupError = await cleanupDirectory(repo.directory, directoryState);
-    throw cleanupError ? combineErrors(error, cleanupError) : error;
-  }
+  return Object.freeze({
+    async cloneRepo(repo: Repo) {
+      const directoryState = await ensureDirectory(repo.directory);
+      try {
+        await execa(git, ["clone", repo.url, repo.directory]);
+      } catch (error) {
+        const cleanupError = await cleanupDirectory(
+          repo.directory,
+          directoryState,
+        );
+        throw cleanupError ? combineErrors(error, cleanupError) : error;
+      }
+    },
+  });
 }
+
+type DirectoryState = "existed" | "created";
 
 async function ensureDirectory(directory: string): Promise<DirectoryState> {
   const existed = await pathExists(directory);

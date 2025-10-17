@@ -7,32 +7,27 @@ export function createRepo(
   visibility: RepoVisibility,
   baseUrl: string,
 ) {
-  const _owner = owner;
-  const _directory = directory;
-  const _visibility = visibility;
-  const _baseUrl = baseUrl;
-
   return Object.freeze({
     get name() {
-      return path.basename(_directory);
+      return path.basename(directory);
     },
     get parentDirectory() {
-      return path.dirname(_directory);
+      return path.dirname(directory);
     },
     get fullName() {
-      return `${_owner}/${this.name}`;
+      return `${owner}/${this.name}`;
     },
     get url() {
-      return new URL(`${this.fullName}.git`, _baseUrl).href;
+      return new URL(`${this.fullName}.git`, baseUrl).href;
     },
     get visibility() {
-      return _visibility;
+      return visibility;
     },
     get owner() {
-      return _owner;
+      return owner;
     },
     get directory() {
-      return _directory;
+      return directory;
     },
   });
 }

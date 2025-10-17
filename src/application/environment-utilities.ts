@@ -1,12 +1,13 @@
 /* eslint-disable security/detect-object-injection */
-type Coerce<T> = (raw: string) => T;
 
 export const asString: Coerce<string> = (v) => v;
+
 export const asNumber: Coerce<number> = (v) => {
   const n = Number(v);
   if (Number.isNaN(n)) throw new Error(`Expected number, got "${v}"`);
   return n;
 };
+
 export const asBool: Coerce<boolean> = (v) => /^(1|true|yes|on)$/i.test(v);
 
 export interface Spec<T> {
@@ -29,3 +30,5 @@ export function read<T>({
   }
   return parse(raw);
 }
+
+type Coerce<T> = (raw: string) => T;
