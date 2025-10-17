@@ -9,6 +9,8 @@ import {
 } from "../../operations/create-repo/handler.js";
 import { createGit } from "../../infrastructure/git.js";
 import { createGitHub } from "../../infrastructure/git-hub.js";
+import { execa } from "execa";
+import inquirer from "inquirer";
 
 export function registerCreateRepo(create: Command) {
   const git: Git = createGit();
@@ -26,5 +28,23 @@ export function registerCreateRepo(create: Command) {
         ENV.REMOTE_BASE_URL,
       );
       console.log(pc.green(`✓ Repo ready in ${pc.bold(repo.directory)}`));
+
+      const { openInVsCode } = await inquirer.prompt([
+        {
+          type: "confirm",
+          name: "openInVsCode",
+          message: "Open in VS Code?",
+          default: true,
+        },
+      ]);
+
+      if (openInVsCode) {
+        const subprocess = execa("code", [repo.directory], {
+          detached: true,
+          stdio: "ignore",
+        });
+        subprocess.unref();
+        console.log(pc.cyan("Opening in VS Code..."));
+      }
     });
 }

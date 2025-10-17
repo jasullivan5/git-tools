@@ -2,7 +2,7 @@ import { mkdtemp, remove } from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-export async function createSandbox(prefix = "git-tools-test-sandbox-") {
+export async function createSandbox(prefix = "wcp-test-sandbox-") {
   const _root = await mkdtemp(path.resolve(tmpdir(), prefix));
   const _origCwd = process.cwd();
 

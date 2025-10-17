@@ -1,5 +1,5 @@
 {
-  "name": "git-tools",
+  "name": "wcp",
   "version": "1.0.0",
   "type": "module",
   "license": "ISC",
@@ -7,14 +7,14 @@
   "engines": {
     "node": ">=22.18.0"
   },
+  "packageManager": "pnpm@10.17.1",
   "bin": {
     "wcp": "bin/wcp"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "setup": "npm run build && (shx chmod +x bin/wcp || exit 0) && (npm link || exit 0)"
+    "setup": "pnpm run build && (shx chmod +x bin/wcp || exit 0) && (pnpm link --global || exit 0)"
   },
-  "packageManager": "pnpm@10.17.1",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.36.0",
@@ -42,14 +42,11 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@types/prompts": "^2.4.9",
     "commander": "^14.0.1",
     "dotenv": "^17.2.3",
     "execa": "^9.6.0",
-    "fast-glob": "^3.3.3",
     "fs-extra": "^11.3.2",
-    "picocolors": "^1.1.1",
-    "prompts": "^2.4.2",
-    "zod": "^4.1.11"
+    "inquirer": "^12.10.0",
+    "picocolors": "^1.1.1"
   }
 }
