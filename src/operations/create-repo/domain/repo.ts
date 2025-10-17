@@ -1,16 +1,15 @@
 import path from "node:path";
-import { ENV } from "../../../environment.js";
-import type { RepoVisibility } from "./repo-visibility.js";
+import { createSetParser } from "../application/create-set-parser.js";
 
 export function createRepo(
   owner: string,
   directory: string,
-  visibility?: RepoVisibility,
+  options?: CreateRepoOptions,
 ) {
   const _owner = owner;
   const _directory = directory;
-  const _visibility = visibility ?? ENV.REPO_VISIBILITY;
-  const _baseUrl = ENV.REMOTE_BASE_URL;
+  const _visibility = options?.visibility ?? "public";
+  const _baseUrl = options?.baseUrl ?? "https://github.com/";
 
   return Object.freeze({
     get name() {
@@ -38,3 +37,20 @@ export function createRepo(
 }
 
 export type Repo = ReturnType<typeof createRepo>;
+
+export interface CreateRepoOptions {
+  visibility?: RepoVisibility;
+  baseUrl?: string;
+}
+
+export const repoVisibilities = new Set([
+  "public",
+  "private",
+  "internal",
+] as const);
+
+export type RepoVisibility =
+  typeof repoVisibilities extends Set<infer T> ? T : never;
+
+export const parseVisibility =
+  createSetParser<RepoVisibility>(repoVisibilities);

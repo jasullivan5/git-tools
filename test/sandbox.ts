@@ -1,7 +1,6 @@
 import { mkdtemp, remove } from "fs-extra";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import url from "node:url";
 
 export async function createSandbox(prefix = "git-tools-test-sandbox-") {
   const _root = await mkdtemp(path.resolve(tmpdir(), prefix));
@@ -18,19 +17,11 @@ export async function createSandbox(prefix = "git-tools-test-sandbox-") {
 
   async function within<T>(function_: () => Promise<T> | T): Promise<T> {
     const previousCwd = process.cwd();
-    const previousGitBase = process.env["REMOTE_BASE_URL"];
     process.chdir(_root);
 
-    const remotesDirectory = path.resolve(_root, ".remotes") + path.sep;
-    process.env["REMOTE_BASE_URL"] = url.pathToFileURL(remotesDirectory).href;
     try {
       return await function_();
     } finally {
-      if (previousGitBase === undefined) {
-        delete process.env["REMOTE_BASE_URL"];
-      } else {
-        process.env["REMOTE_BASE_URL"] = previousGitBase;
-      }
       process.chdir(previousCwd);
     }
   }
