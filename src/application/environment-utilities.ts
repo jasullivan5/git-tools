@@ -1,5 +1,3 @@
-/* eslint-disable security/detect-object-injection */
-
 export const asString: Coerce<string> = (v) => v;
 
 export const asNumber: Coerce<number> = (v) => {

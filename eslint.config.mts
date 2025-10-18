@@ -64,6 +64,7 @@ export default defineConfig(
     rules: {
       "unicorn/no-null": "off",
       "security/detect-non-literal-fs-filename": "off",
+      "security/detect-object-injection": "off",
     },
   },
   {

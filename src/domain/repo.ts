@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createSetParser } from "../application/create-set-parser.js";
+import { createArrayParser } from "../application/create-array-parser.js";
 
 export function createRepo(
   owner: string,
@@ -34,14 +34,8 @@ export function createRepo(
 
 export type Repo = ReturnType<typeof createRepo>;
 
-export const repoVisibilities = new Set([
-  "public",
-  "private",
-  "internal",
-] as const);
+export const repoVisibilities = ["public", "private", "internal"] as const;
 
-export type RepoVisibility =
-  typeof repoVisibilities extends Set<infer T> ? T : never;
+export type RepoVisibility = (typeof repoVisibilities)[number];
 
-export const parseVisibility =
-  createSetParser<RepoVisibility>(repoVisibilities);
+export const parseVisibility = createArrayParser(repoVisibilities);

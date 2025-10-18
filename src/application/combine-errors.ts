@@ -7,6 +7,7 @@ export function combineErrors(
   if (subErrorMessages.length === 0) {
     return originalError;
   }
+
   const subErrorsCombined = `\n${subErrorMessages.join("\n")}`;
   if (originalError instanceof Error) {
     originalError.message += subErrorsCombined;

@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { registerCreate } from "./create/register-create.js";
+import { ensureConfigInteractive } from "./config.js";
 
 function buildProgram() {
   const program = new Command()
@@ -10,6 +11,11 @@ function buildProgram() {
     .configureHelp({ sortSubcommands: true, sortOptions: true });
 
   registerCreate(program);
+
+  program.hook("preAction", async () => {
+    await ensureConfigInteractive();
+  });
+
   return program;
 }
 

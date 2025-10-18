@@ -5,5 +5,6 @@ export function registerCreate(program: Command) {
   const create = program
     .command("create")
     .description("Create resources (repos, etc.)");
+
   registerCreateRepo(create);
 }
