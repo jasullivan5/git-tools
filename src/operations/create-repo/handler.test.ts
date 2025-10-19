@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { makeCreateRepoHandler } from "./handler.js";
 import { createSandbox, type Sandbox } from "../../../test/sandbox.js";
 import path from "node:path";
-import { existsSync } from "fs-extra";
+import { exists } from "fs-extra";
 import { pathToFileURL } from "node:url";
 import { createFakeGitHub } from "../../../test/fake-git-hub.js";
 import { createGit } from "../../infrastructure/git.js";
@@ -30,9 +30,9 @@ describe("Given an owner, directory path, visibility, and remote url, when a req
     await sandbox.cleanup();
   });
 
-  it("clones the repo to the given directory", () => {
+  it("clones the repo to the given directory", async () => {
     const absPath = path.resolve(sandbox.root, newRepoPath);
-    const exists = existsSync(absPath);
-    expect(exists).toBe(true);
+    const doesExist = await exists(absPath);
+    expect(doesExist).toBe(true);
   });
 });

@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import fs, { exists } from "fs-extra";
 import os from "node:os";
 import path from "node:path";
 import { z } from "zod";
@@ -7,27 +7,34 @@ import { repoVisibilities } from "../domain/repo.js";
 
 const CONFIG_PATH = path.join(os.homedir(), "wcp-config.json");
 const SCHEMA_PATH = path.join(os.homedir(), "wcp-config.schema.json");
-const ConfigSchema = z
-  .object({
-    REPO_OWNER: z.string().min(1, "REPO_OWNER is required"),
-    DESTINATION_DIR: z
-      .string()
-      .refine(
-        (directory: string) => path.isAbsolute(directory),
-        "DESTINATION_DIR must be absolute",
-      ),
-    REPO_VISIBILITY: z.enum(repoVisibilities),
-    REMOTE_BASE_URL: z
-      .url()
-      .transform((url: string) => (url.endsWith("/") ? url : url + "/")),
-  })
-  .strict();
+
+const ConfigSchema = z.object({
+  REPO_OWNER: z.string().min(1, "REPO_OWNER is required"),
+  DESTINATION_DIR: z
+    .string()
+    .refine(
+      (directory: string) => path.isAbsolute(directory),
+      "DESTINATION_DIR must be absolute",
+    ),
+  REPO_VISIBILITY: z.enum(repoVisibilities),
+  REMOTE_BASE_URL: z
+    .url()
+    .and(
+      z
+        .string()
+        .regex(/\/$/, { message: "REMOTE_BASE_URL must end with a slash" }),
+    ),
+});
+
+const ConfigFileSchema = ConfigSchema.extend({
+  $schema: z.string().optional(),
+});
 
 export async function ensureConfigInteractive(): Promise<Config> {
   try {
-    return loadConfig();
+    return await loadConfig();
   } catch (error) {
-    if (fs.existsSync(CONFIG_PATH)) throw error; // exists but invalid → surface errors
+    if (await exists(CONFIG_PATH)) throw error; // exists but invalid → surface errors
     // Missing → ask to create
     const { create } = await inquirer.prompt([
       {
@@ -56,15 +63,14 @@ export async function ensureConfigInteractive(): Promise<Config> {
         type: "input",
         name: "REPO_OWNER",
         message: "Repo owner/org",
-        validate: (value: string) => (value ? true : "Required"),
+        validate: makeValidator("REPO_OWNER"),
       },
       {
         type: "input",
         name: "DESTINATION_DIR",
         message: "Destination dir (absolute)",
         default: defaults.DESTINATION_DIR,
-        validate: (value: string) =>
-          path.isAbsolute(value) || "Must be absolute path",
+        validate: makeValidator("DESTINATION_DIR"),
       },
       {
         type: "list",
@@ -79,61 +85,43 @@ export async function ensureConfigInteractive(): Promise<Config> {
         message: "Remote base URL",
         default: defaults.REMOTE_BASE_URL,
         filter: (value: string) => (value.endsWith("/") ? value : value + "/"),
-        validate: (value: string) =>
-          z.url().safeParse(value).success || "Must be a valid URL",
+        validate: makeValidator("REMOTE_BASE_URL"),
       },
     ]);
 
-    // Validate & normalize via Zod (normalizes trailing slash)
     const cfg = ConfigSchema.parse(answers);
 
-    // Write schema + config (with $schema pointer)
-    writeSchemaIfMissing();
+    await writeSchemaIfMissing();
     const withSchema = { $schema: "./" + path.basename(SCHEMA_PATH), ...cfg };
-    fs.writeFileSync(
-      CONFIG_PATH,
-      JSON.stringify(withSchema, null, 2) + "\n",
-      "utf8",
-    );
+    // eslint-disable-next-line import/no-named-as-default-member
+    await fs.writeJson(CONFIG_PATH, withSchema, { spaces: 2 });
 
     return cfg;
   }
 }
 
-type Config = z.infer<typeof ConfigSchema>;
-
-function loadConfig(): Config {
-  const raw = fs.readFileSync(CONFIG_PATH, "utf8");
-  const json = JSON.parse(raw);
-  const result = ConfigSchema.safeParse(json);
-  if (!result.success) {
-    const issues = result.error.issues
-      .map((issue) => `- ${issue.path.join(".")}: ${issue.message}`)
-      .join("\n");
-    throw new Error(`Invalid config at ${CONFIG_PATH}:\n${issues}`);
-  }
-  return result.data;
+export async function loadConfig(): Promise<Config> {
+  // eslint-disable-next-line import/no-named-as-default-member
+  const json = await fs.readJson(CONFIG_PATH);
+  return ConfigSchema.parse(json);
 }
 
-function writeSchemaIfMissing() {
-  if (fs.existsSync(SCHEMA_PATH)) return;
-  const schema = {
-    $schema: "http://json-schema.org/draft-07/schema#",
-    title: "WCP Config",
-    type: "object",
-    properties: {
-      REPO_OWNER: { type: "string", minLength: 1 },
-      DESTINATION_DIR: { type: "string", minLength: 1 },
-      REPO_VISIBILITY: { type: "string", enum: repoVisibilities },
-      REMOTE_BASE_URL: { type: "string", format: "uri" },
-    },
-    required: [
-      "REPO_OWNER",
-      "DESTINATION_DIR",
-      "REPO_VISIBILITY",
-      "REMOTE_BASE_URL",
-    ],
-    additionalProperties: false,
+async function writeSchemaIfMissing() {
+  if (await exists(SCHEMA_PATH)) return;
+
+  const jsonSchema = z.toJSONSchema(ConfigFileSchema, { target: "draft-7" });
+
+  // eslint-disable-next-line import/no-named-as-default-member
+  await fs.writeJson(SCHEMA_PATH, jsonSchema, { spaces: 2 });
+}
+
+type Config = z.infer<typeof ConfigSchema>;
+
+function makeValidator(key: keyof Config) {
+  return (value: unknown) => {
+    const result = ConfigSchema.pick({ [key]: true }).safeParse({
+      [key]: value,
+    });
+    return result.success || (result.error.issues[0]?.message ?? "invalid");
   };
-  fs.writeFileSync(SCHEMA_PATH, JSON.stringify(schema, null, 2) + "\n", "utf8");
 }

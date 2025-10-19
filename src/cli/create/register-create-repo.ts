@@ -1,7 +1,6 @@
 import type { Command } from "commander";
 import pc from "picocolors";
 import path from "node:path";
-import { ENV } from "../environment.js";
 import {
   makeCreateRepoHandler,
   type Git,
@@ -11,6 +10,7 @@ import { createGit } from "../../infrastructure/git.js";
 import { createGitHub } from "../../infrastructure/git-hub.js";
 import { execa } from "execa";
 import inquirer from "inquirer";
+import { loadConfig } from "../config.js";
 
 export function registerCreateRepo(create: Command) {
   const git: Git = createGit();
@@ -22,9 +22,11 @@ export function registerCreateRepo(create: Command) {
     .description("Create and clone <name> into your local repos folder")
     .argument("<name>", "repository name (e.g. my-new-repo)")
     .action(async (name: string) => {
-      const repoPath = path.resolve(ENV.DESTINATION_DIR, name);
+      const config = await loadConfig();
 
-      printPlan(name, repoPath, ENV.REPO_VISIBILITY);
+      const repoPath = path.resolve(config.DESTINATION_DIR, name);
+
+      printPlan(name, repoPath, config.REPO_VISIBILITY);
 
       if (!(await confirm("Create this repository?"))) {
         console.log(pc.yellow("✗ Cancelled."));
@@ -32,10 +34,10 @@ export function registerCreateRepo(create: Command) {
       }
 
       const repo = await createRepo(
-        ENV.REPO_OWNER,
+        config.REPO_OWNER,
         repoPath,
-        ENV.REPO_VISIBILITY,
-        ENV.REMOTE_BASE_URL,
+        config.REPO_VISIBILITY,
+        config.REMOTE_BASE_URL,
       );
 
       console.log(pc.green(`✓ Repo ready in ${pc.bold(repo.directory)}`));

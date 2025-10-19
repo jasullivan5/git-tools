@@ -1,6 +1,6 @@
 import { execa } from "execa";
 import type { Repo } from "../domain/repo.js";
-import { ensureDir, pathExists, remove } from "fs-extra";
+import { pathExists, ensureDir, remove } from "fs-extra";
 import { extractErrorMessage } from "../application/extract-error-message.js";
 import { combineErrors } from "../application/combine-errors.js";
 
